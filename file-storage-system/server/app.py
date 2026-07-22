@@ -200,7 +200,7 @@ def upload_file():
         return jsonify({'message': 'No selected file'}), 400
         
     folder_id = request.form.get('folder_id')
-    if folder_id == 'null' or folder_id == '':
+    if folder_id is None or folder_id == 'null' or folder_id == '':
         folder_id = None
     else:
         folder_id = int(folder_id)
