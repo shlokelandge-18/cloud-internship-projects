@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudVault - Secure Cloud Storage</title>
+    <!-- Outfit Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- SVG Gradient Definition -->
+    <svg style="width:0;height:0;position:absolute;" aria-hidden="true" focusable="false">
+        <linearGradient id="cyan-purple-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#06b6d4" />
+            <stop offset="50%" stop-color="#3b82f6" />
+            <stop offset="100%" stop-color="#a855f7" />
+        </linearGradient>
+    </svg>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <h1 class="sidebar-logo">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="url(#cyan-purple-grad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17.5 19A3.5 3.5 0 0 0 21 15.5c0-2.79-2.54-4.5-5-4.5-.42-1.89-1.74-3.5-3.5-4.5A5.5 5.5 0 0 0 4 10.07A4.42 4.42 0 0 0 1 14c0 2.2 1.8 4 4 4"></path>
+                    <path d="M12 12v6"></path>
+                    <path d="m9 15 3-3 3 3"></path>
+                </svg>
+                CloudVault
+            </h1>
+
+            <ul class="sidebar-menu">
+                <li class="menu-item active">
+                    <a href="#" class="menu-link" onclick="navigateTo(null)">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"></path></svg>
+                        My Drive
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Storage Widget -->
+            <div class="storage-widget glass-panel">
+                <div class="storage-title">
+                    <span>Storage Used</span>
+                    <span id="storage-percentage">0%</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="storage-bar"></div>
+                </div>
+                <div class="storage-details" id="storage-text">
+                    0 B of 2 GB used
+                </div>
+            </div>
+
+            <!-- User profile footer -->
+            <div class="user-profile">
+                <div class="avatar" id="user-avatar">U</div>
+                <div class="user-info">
+                    <div class="username" id="user-name-display">Username</div>
+                    <div style="font-size:0.75rem;color:var(--text-secondary);">User Vault</div>
+                </div>
+                <button class="logout-btn" onclick="logout()" title="Logout">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header bar -->
+            <header class="content-header">
+                <div class="search-bar">
+                    <input type="text" class="search-input" id="search-input" placeholder="Search files & folders..." oninput="handleSearch()">
+                    <svg style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-secondary);" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="openNewFolderModal()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"></path><line x1="12" y1="10" x2="12" y2="16"></line><line x1="9" y1="13" x2="15" y2="13"></line></svg>
+                        New Folder
+                    </button>
+                    <button class="btn btn-accent" onclick="triggerFileInput()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        Upload File
+                    </button>
+                    <!-- Hidden file inputs -->
+                    <input type="file" id="file-input" style="display:none;" onchange="handleFileSelect(event)">
+                </div>
+            </header>
+
+            <!-- Breadcrumbs Navigation -->
+            <ul class="breadcrumbs" id="breadcrumbs-bar">
+                <li class="breadcrumb-item"><a onclick="navigateTo(null)">My Drive</a></li>
+            </ul>
+
+            <!-- Dropzone for uploads -->
+            <div class="upload-dropzone" id="dropzone" onclick="triggerFileInput()">
+                <div class="upload-dropzone-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                </div>
+                <div class="upload-dropzone-text">Drag and drop files here to upload</div>
+                <div class="upload-dropzone-sub">or click to browse local files. Same-name files create a new version.</div>
+            </div>
+
+            <!-- Folders Section -->
+            <div id="folders-section">
+                <h3 class="section-title">Folders</h3>
+                <div class="grid-container" id="folders-grid"></div>
+            </div>
+
+            <!-- Files Section -->
+            <div id="files-section">
+                <h3 class="section-title">Files</h3>
+                <div class="grid-container" id="files-grid"></div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" id="empty-state">
+                <div class="empty-state-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                </div>
+                <div class="empty-state-title">This folder is empty</div>
+                <p>Upload a file or create a folder to get started!</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Upload Status Popup Card -->
+    <div class="upload-status-card glass-panel" id="upload-status">
+        <div class="upload-status-header">
+            <span id="upload-status-title">Uploading file...</span>
+            <span id="upload-status-progress">0%</span>
+        </div>
+        <div class="progress-bar-container">
+            <div class="progress-bar-fill" id="upload-status-bar" style="width:0%;"></div>
+        </div>
+    </div>
+
+    <!-- Modals Overlay -->
+    <div class="modal-overlay" id="modal-overlay" onclick="closeAllModals(event)">
+        <!-- Folder Modal -->
+        <div class="modal glass-panel" id="folder-modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 class="modal-title">New Folder</h2>
+                <button class="modal-close" onclick="closeModal('folder-modal')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label" for="new-folder-name">Folder Name</label>
+                    <input class="form-input" type="text" id="new-folder-name" placeholder="Enter folder name" style="padding-left: 14px;" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('folder-modal')">Cancel</button>
+                <button class="btn btn-accent" onclick="createNewFolder()">Create</button>
+            </div>
+        </div>
+
+        <!-- Sharing Details Modal -->
+        <div class="modal glass-panel" id="share-modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 class="modal-title">File Sharing Details</h2>
+                <button class="modal-close" onclick="closeModal('share-modal')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label" for="share-file-name">File Name</label>
+                    <div style="font-weight:600;margin-bottom:12px;" id="share-file-name">filename.txt</div>
+                </div>
+                <div class="form-group" id="s3-presigned-section">
+                    <label class="form-label">Link Expiry Duration</label>
+                    <select class="form-input" id="share-expiry" style="padding-left:14px;" onchange="regenerateSharingLink()">
+                        <option value="600">10 Minutes</option>
+                        <option value="3600" selected>1 Hour</option>
+                        <option value="86400">24 Hours</option>
+                        <option value="604800">7 Days</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label">Secure Shareable URL</label>
+                    <div class="input-wrapper" style="display:flex;gap:8px;">
+                        <input class="form-input" type="text" id="share-url-box" readonly style="padding-left: 14px;flex-grow:1;">
+                        <button class="btn btn-accent" onclick="copySharingLink()" style="padding:10px 14px;">Copy</button>
+                    </div>
+                    <span id="copy-confirmation" style="color:var(--success);font-size:0.8rem;margin-top:6px;display:none;">Link copied to clipboard!</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('share-modal')">Close</button>
+            </div>
+        </div>
+
+        <!-- Versions Modal -->
+        <div class="modal glass-panel" id="versions-modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 class="modal-title">File Version History</h2>
+                <button class="modal-close" onclick="closeModal('versions-modal')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Active File</label>
+                    <div style="font-weight:600;margin-bottom:12px;" id="version-file-name">filename.txt</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Available Versions</label>
+                    <ul class="version-list" id="versions-list-box">
+                        <!-- Simulated items -->
+                        <li class="version-item">
+                            <div class="version-info-left">
+                                <span class="version-name">Initial version</span>
+                                <span class="version-date">Today at 12:00</span>
+                            </div>
+                            <button class="btn btn-secondary btn-sm" disabled>Current</button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('versions-modal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Context dropdown template reference (cloned dynamically) -->
+    <div class="dropdown-menu" id="actions-dropdown">
+        <div class="dropdown-item" id="drop-share" onclick="handleShareAction()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+            Share Link
+        </div>
+        <div class="dropdown-item" id="drop-versions" onclick="handleVersionsAction()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg>
+            Version History
+        </div>
+        <div class="dropdown-item delete" id="drop-delete" onclick="handleDeleteAction()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+            Delete
+        </div>
+    </div>
+
+    <!-- App Logic Script -->
+    <script src="app.js"></script>
+</body>
+</html>

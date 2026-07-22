@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudCost Optimizer - FinOps Dashboard</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- SVG Gradient Definitions -->
+    <svg style="width:0;height:0;position:absolute;" aria-hidden="true" focusable="false">
+        <linearGradient id="brand-gradient-fill" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#10b981" />
+            <stop offset="50%" stop-color="#06b6d4" />
+            <stop offset="100%" stop-color="#3b82f6" />
+        </linearGradient>
+    </svg>
+
+    <!-- Navigation Header -->
+    <header class="navbar glass-card" style="border-radius: 0; border-top:none; border-left:none; border-right:none; padding:15px 40px;">
+        <div class="nav-brand">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="1" x2="12" y2="23"></line>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            </svg>
+            CloudCost Optimizer
+        </div>
+        <div>
+            <button class="btn-reset" onclick="resetSimulation()">Reset Simulation State</button>
+        </div>
+    </header>
+
+    <div class="dashboard-grid">
+        <!-- KPI METRICS GRID -->
+        <section class="kpi-grid">
+            <div class="glass-card kpi-card spend">
+                <div>
+                    <div class="kpi-label">Current Spend</div>
+                    <div class="kpi-value" id="kpi-current-spend">$0.00</div>
+                </div>
+                <div class="kpi-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                </div>
+            </div>
+
+            <div class="glass-card kpi-card forecast">
+                <div>
+                    <div class="kpi-label">Forecasted Spend</div>
+                    <div class="kpi-value" id="kpi-forecasted-spend">$0.00</div>
+                </div>
+                <div class="kpi-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                </div>
+            </div>
+
+            <div class="glass-card kpi-card savings">
+                <div>
+                    <div class="kpi-label">Savings Potential</div>
+                    <div class="kpi-value" id="kpi-savings-potential">$0.00</div>
+                </div>
+                <div class="kpi-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                </div>
+            </div>
+
+            <div class="glass-card kpi-card alerts">
+                <div>
+                    <div class="kpi-label">Budget Alerts</div>
+                    <div class="kpi-value" id="kpi-alerts-count">0</div>
+                </div>
+                <div class="kpi-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                </div>
+            </div>
+        </section>
+
+        <!-- CHARTS SECTION -->
+        <section class="charts-grid">
+            <!-- Cost Trend line chart -->
+            <div class="glass-card chart-card">
+                <div class="chart-title">
+                    <span>Monthly Spend History</span>
+                </div>
+                <div class="canvas-wrapper">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Service distribution pie chart -->
+            <div class="glass-card chart-card">
+                <div class="chart-title">
+                    <span>Spend by AWS Service</span>
+                </div>
+                <div class="canvas-wrapper">
+                    <canvas id="serviceChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- BUDGETING & ALERTS SECTION -->
+        <section class="budget-grid">
+            <!-- Budget setting -->
+            <div class="glass-card budget-settings">
+                <h3 class="chart-title">Manage Monthly Budget</h3>
+                <div>
+                    <p style="color:var(--text-secondary);font-size:0.9rem;">Set your target spending budget. We will trigger warnings and alerts dynamically if costs approach or exceed this limit.</p>
+                    <div class="budget-input-wrapper">
+                        <span style="font-size:1.8rem;font-weight:700;align-self:center;margin-right:-4px;">$</span>
+                        <input type="number" class="budget-input" id="budget-input" placeholder="Enter limit">
+                        <button class="btn-update" onclick="updateBudgetLimit()">Update Limit</button>
+                    </div>
+                </div>
+                <div style="font-size:0.85rem;color:var(--text-secondary);" id="budget-status-label">
+                    Budget utilization: 0%
+                </div>
+            </div>
+
+            <!-- Alerts log -->
+            <div class="glass-card">
+                <h3 class="chart-title">Active Cost Violations Log</h3>
+                <div class="alerts-list" id="alerts-log-container">
+                    <!-- Alerts render -->
+                </div>
+            </div>
+        </section>
+
+        <!-- RECOMMENDATIONS CENTER -->
+        <section class="recommendations-section glass-card">
+            <h3 class="chart-title" style="margin-bottom: 20px;">
+                FinOps Cost Leaks & Optimization Tips
+                <span class="badge" style="background:rgba(16,185,129,0.1);color:var(--accent-neon);font-size:0.8rem;text-transform:none;" id="leaks-badge-count">0 Leaks Detected</span>
+            </h3>
+
+            <div class="table-wrapper">
+                <table class="rec-table">
+                    <thead>
+                        <tr>
+                            <th>Service</th>
+                            <th>Resource Detail</th>
+                            <th>Region</th>
+                            <th>Current Cost</th>
+                            <th>Leak State</th>
+                            <th>Saving Opportunity</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recommendations-table-body">
+                        <!-- Recommendation items -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Empty Recommendations State -->
+            <div class="rec-empty" id="rec-empty-state" style="display:none;">
+                <div class="rec-empty-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                </div>
+                <div style="font-weight:700;font-size:1.05rem;color:var(--text-primary);">Infrastructure fully optimized!</div>
+                <p style="color:var(--text-secondary);font-size:0.9rem;margin-top:4px;">No cost leaks detected. All resources are utilizing their budgets efficiently.</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- Script file -->
+    <script src="app.js"></script>
+</body>
+</html>
