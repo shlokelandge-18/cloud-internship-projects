@@ -1,0 +1,16 @@
+{
+  "name": "api-rate-limiting-security-gateway",
+  "version": "1.0.0",
+  "description": "A lightweight API Gateway simulating cloud-native rate limiting, token auth, request logging and access policies.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "express-rate-limit": "^7.4.0",
+    "morgan": "^1.10.0",
+    "dotenv": "^16.4.5"
+  }
+}

@@ -1,72 +1,70 @@
-# Cloud Engineering Internship Projects
+# API Rate Limiting & Security Gateway
 
-This repository contains the source code for two cloud-based full-stack applications built during my internship.
+A lightweight, self-contained API Gateway built with Node.js/Express that demonstrates the core patterns of a cloud API Gateway (like AWS API Gateway / Azure API Management) without needing a cloud account:
 
----
+- **Token-based authentication** — JWT issued on login, verified on every protected request
+- **Rate limiting** — per-user, per-role request throttling using `express-rate-limit`
+- **Request logging** — every request logged to console and `logs/access.log` (stand-in for CloudWatch Logs / ELK ingestion)
+- **Access policies** — role-based route allow-lists defined declaratively in `policies.json`
 
-## 📁 1. CloudVault — Secure Cloud File Storage System
+## Architecture
 
-CloudVault is a secure cloud storage web application inspired by Google Drive, capable of storing files, managing directory architectures, and keeping track of histories.
+```
+Client
+  │
+  ▼
+POST /auth/login  →  issues JWT (role embedded in token)
+  │
+  ▼
+GET /gateway/*
+  │
+  ├─► authenticateToken   (verifies JWT)
+  ├─► enforceAccessPolicy (checks policies.json for role → route permission)
+  ├─► dynamicRateLimiter  (role-based request quota)
+  ▼
+Downstream "microservice" route (orders / users / reports)
+```
 
-### Key Features
-* **Dual Storage Driver Engine:** Integrates with AWS S3 using Boto3 (when credentials are set in the environment) and falls back to a secure local folder storage system for zero-dependency local runs.
-* **JWT-Based Authentication:** Clean sign-up and login layouts utilizing password hashing and secure JSON Web Tokens.
-* **File & Folder Management:** Drag-and-drop file uploading, directory mapping (creating subfolders), renaming, and deletion.
-* **Automated Versioning System:** Uploading a file with an identical name in a directory archives the older copy as a history trace. Users can check versions and restore past edits in one click.
-* **Sharing Links:** Generate expiring download URLs (S3 presigned URLs or secure local download endpoints).
-* **Glassmorphic Theme:** Responsive UI designed with custom animations, storage metrics, and dynamic grid layouts.
+This mirrors a real cloud deployment where API Gateway sits in front of Lambda functions or microservices, using Cognito/JWT authorizers, usage plans (rate limiting), and resource policies (access control).
 
----
+## Running locally
 
-## 📊 2. CloudCost Optimizer — FinOps & Cloud Cost Optimization Dashboard
+```bash
+npm install
+cp .env.example .env    # edit JWT_SECRET if you like
+npm start
+```
 
-CloudCost Optimizer is a FinOps dashboard built to monitor cloud resources, identify cost leaks, manage budgets, and optimize resource sizes to reduce waste.
+Server runs on `http://localhost:4000`.
 
-### Key Features
-* **AWS Cost Explorer Telemetry Simulator:** Generates monthly telemetry figures broken down by AWS service types (EC2, S3, RDS, Redshift) and regions.
-* **Cost Leaks Recommendations Engine:** Identifies active billing leaks:
-  * Underutilized EC2 instances (runs low CPU workload on oversized machines).
-  * Stopped/Idle EC2 instances.
-  * Unattached orphaned EBS volumes.
-  * Idle Elastic Load Balancers receiving zero traffic.
-  * Standard S3 buckets missing transition Lifecycle policies.
-* **Actionable One-Click Optimization:** Pressing "Optimize" sends a request to clean up that resource, immediately recalculating monthly stats, redrawing charts, and reducing spend totals.
-* **Interactive Visualizations:** Live line graphs tracking monthly cost trends and service share pie-charts powered by Chart.js.
-* **Budget Threshold Alerts:** Allows setting custom spending limits. Automatically sends warning logs (at 85%) and critical alerts (at 100%) if forecasted spend exceeds thresholds.
+## Try it
 
----
+```bash
+# 1. Log in as admin
+curl -X POST http://localhost:4000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123"}'
 
-## 🛠️ Technology Stack
-* **Frontend:** HTML5, CSS3 (variables, transitions, responsive layouts), Vanilla ES6 JavaScript, Chart.js.
-* **Backend:** Python 3, Flask, Flask-CORS.
-* **Database:** SQLite.
-* **Cloud & Tools:** Boto3, Git.
+# copy the returned token, then:
+curl http://localhost:4000/gateway/reports \
+  -H "Authorization: Bearer <TOKEN>"
 
----
+# Log in as a regular user (alice/alice123) and try /gateway/users — it will be blocked (403)
+# because policies.json only allows "user" role to hit /gateway/orders.
+```
 
-## 🚀 How to Run Locally
+Hit any protected route more than the allowed number of times within the rate-limit window and you'll get a `429 Too Many Requests`.
 
-### Prerequisites
-Make sure you have **Python 3.x** installed.
+## Mapping to real cloud services
 
-### Run CloudVault (File Storage)
-1. Install dependencies:
-   ```bash
-   pip install -r file-storage-system/server/requirements.txt
-   ```
-2. Run backend server:
-   ```bash
-   python file-storage-system/server/app.py
-   ```
-3. Open `file-storage-system/client/auth.html` in your browser.
+| This project              | Real cloud equivalent                         |
+|----------------------------|------------------------------------------------|
+| Express gateway            | AWS API Gateway / Azure API Management         |
+| JWT auth middleware        | Cognito / Azure AD authorizer                  |
+| `policies.json`            | IAM resource policies / usage plans            |
+| `express-rate-limit`       | API Gateway throttling / usage plan quotas     |
+| `logs/access.log`          | CloudWatch Logs / ELK log ingestion            |
+| `/gateway/*` route handlers| Lambda functions / backend microservices       |
 
-### Run CloudCost Optimizer (FinOps Dashboard)
-1. Install dependencies:
-   ```bash
-   pip install -r cloud-cost-dashboard/server/requirements.txt
-   ```
-2. Run backend server:
-   ```bash
-   python cloud-cost-dashboard/server/app.py
-   ```
-3. Open `cloud-cost-dashboard/client/index.html` in your browser.
+## Tech stack
+Node.js, Express, jsonwebtoken, express-rate-limit, morgan

@@ -1,0 +1,10 @@
+{
+  "admin": {
+    "allowedRoutes": ["/gateway/orders", "/gateway/users", "/gateway/reports"],
+    "rateLimitMultiplier": 3
+  },
+  "user": {
+    "allowedRoutes": ["/gateway/orders"],
+    "rateLimitMultiplier": 1
+  }
+}
